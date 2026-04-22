@@ -8,7 +8,7 @@ namespace LabCw5.Controllers;
 [Route("api/[controller]")]
 public class RoomsController : ControllerBase
 {
-    private static List<Room> _rooms =
+    public static List<Room> Rooms =
     [
         new Room
         {
@@ -17,7 +17,7 @@ public class RoomsController : ControllerBase
             BuildingCode = "B",
             Floor = 1,
             Capacity = 24,
-            hasProjector = true,
+            HasProjector = true,
             IsActive = true,
         },
         new Room
@@ -27,7 +27,7 @@ public class RoomsController : ControllerBase
             BuildingCode = "B",
             Floor = 1,
             Capacity = 12,
-            hasProjector = false,
+            HasProjector = false,
             IsActive = true,
         },
         new Room
@@ -37,64 +37,48 @@ public class RoomsController : ControllerBase
             BuildingCode = "A",
             Floor = 2,
             Capacity = 16,
-            hasProjector = true,
+            HasProjector = true,
             IsActive = true,
+        },
+        new Room
+        {
+            Id = 4,
+            Name = "Lab 310",
+            BuildingCode = "A",
+            Floor = 3,
+            Capacity = 16,
+            HasProjector = false,
+            IsActive = false,
         }
     ];
     
     [HttpGet]
     public IActionResult GetAll([FromQuery] int? minCapacity, [FromQuery] bool? hasProjector, [FromQuery] bool activeOnly = false)
     {
-        if (minCapacity is not null || hasProjector is not null || activeOnly != false)
+        
+        var query = Rooms.AsQueryable();
+        if (minCapacity is not null)
         {
-            var query = _rooms.AsQueryable();
-            if (minCapacity is not null)
-            {
-                query = query.Where(e => e.Capacity >= minCapacity.Value);
-            }
-
-            if (hasProjector is not null)
-            {
-                query = query.Where(e => e.hasProjector == hasProjector.Value);
-            }
-
-            if (activeOnly)
-            {
-                query = query.Where(e => e.IsActive);
-            }
-            var rooms = query.Select(e=> new RoomDto{
-                Id = e.Id,
-                Name = e.Name,
-                BuildingCode = e.BuildingCode,
-                Floor = e.Floor,
-                Capacity = e.Capacity,
-                hasProjector = e.hasProjector,
-                IsActive = e.IsActive
-            }).ToList();
-            return Ok(rooms);
+            query = query.Where(e => e.Capacity >= minCapacity.Value);
         }
-        var roomsDto = new List<RoomDto>();
-        foreach (var room in _rooms)
+        if (hasProjector is not null)
         {
-            roomsDto.Add(new RoomDto
-                {
-                    Id = room.Id,
-                    Name = room.Name,
-                    BuildingCode = room.BuildingCode,
-                    Floor = room.Floor,
-                    Capacity = room.Capacity,
-                    hasProjector = room.hasProjector,
-                    IsActive = room.IsActive
-                }
-            );
+            query = query.Where(e => e.HasProjector == hasProjector.Value);
         }
-        return Ok(roomsDto);
+        if (activeOnly)
+        {
+            query = query.Where(e => e.IsActive);
+        }
+        var rooms = query.Select(e=> new RoomDto{
+            Id = e.Id, Name = e.Name, BuildingCode = e.BuildingCode, Floor = e.Floor, Capacity = e.Capacity, hasProjector = e.HasProjector, IsActive = e.IsActive
+        }).ToList();
+        return Ok(rooms);
     }
 
     [HttpGet("{id:int}")]
     public IActionResult GetById(int id)
     {
-        var room = _rooms.FirstOrDefault(x => x.Id == id);
+        var room = Rooms.FirstOrDefault(x => x.Id == id);
         if (room is null)
         {
             return NotFound($"Room with id {id} not found");
@@ -106,7 +90,7 @@ public class RoomsController : ControllerBase
             BuildingCode = room.BuildingCode,
             Floor = room.Floor,
             Capacity = room.Capacity,
-            hasProjector = room.hasProjector,
+            hasProjector = room.HasProjector,
             IsActive = room.IsActive
         });
     }
@@ -114,7 +98,7 @@ public class RoomsController : ControllerBase
     [HttpGet("building/{buildingCode}")]
     public IActionResult GetByBuildingCode(string buildingCode)
     {
-        var room = _rooms.Where(x => x.BuildingCode == buildingCode).ToList();
+        var room = Rooms.Where(x => x.BuildingCode == buildingCode).ToList();
         if (room.Count == 0)
         {
             return NotFound($"Rooms in building with code {buildingCode} not found");
@@ -126,7 +110,7 @@ public class RoomsController : ControllerBase
                 BuildingCode = item.BuildingCode,
                 Floor = item.Floor,
                 Capacity = item.Capacity,
-                hasProjector = item.hasProjector,
+                hasProjector = item.HasProjector,
                 IsActive = item.IsActive
             }).ToList();
         return Ok(roomsDto);
@@ -157,22 +141,22 @@ public class RoomsController : ControllerBase
     {
         var newRoom = new Room
         {
-            Id = _rooms.Count > 0 ? _rooms.Last().Id + 1:1,
+            Id = Rooms.Count > 0 ? Rooms.Last().Id + 1:1,
             Name = roomDto.Name,
             BuildingCode = roomDto.BuildingCode,
             Floor = roomDto.Floor,
             Capacity = roomDto.Capacity,
-            hasProjector = roomDto.hasProjector,
+            HasProjector = roomDto.hasProjector,
             IsActive = roomDto.IsActive
         };
-        _rooms.Add(newRoom);
+        Rooms.Add(newRoom);
         return CreatedAtAction(nameof(GetById), new { id = newRoom.Id }, newRoom);
     }
 
     [HttpPut("{id:int}")]
     public IActionResult Update(int id, UpdateRoomDto roomDto)
     {
-        var updatedRoom = _rooms.FirstOrDefault(x => x.Id == id);
+        var updatedRoom = Rooms.FirstOrDefault(x => x.Id == id);
         if (updatedRoom is null)
         {
             return NotFound($"Room with id  {id} not found");
@@ -182,7 +166,7 @@ public class RoomsController : ControllerBase
         updatedRoom.BuildingCode = roomDto.BuildingCode;
         updatedRoom.Floor = roomDto.Floor;
         updatedRoom.Capacity = roomDto.Capacity;
-        updatedRoom.hasProjector = roomDto.hasProjector;
+        updatedRoom.HasProjector = roomDto.hasProjector;
         updatedRoom.IsActive = roomDto.IsActive;
         
         return NoContent();
@@ -191,12 +175,12 @@ public class RoomsController : ControllerBase
     [HttpDelete("{id:int}")]
     public IActionResult Delete(int id)
     {
-        var updatedRoom = _rooms.FirstOrDefault(x => x.Id == id);
+        var updatedRoom = Rooms.FirstOrDefault(x => x.Id == id);
         if (updatedRoom is null)
         {
             return NotFound($"Room with id  {id} not found");
         }
-        _rooms.Remove(updatedRoom);
+        Rooms.Remove(updatedRoom);
         return NoContent();
     }
 }

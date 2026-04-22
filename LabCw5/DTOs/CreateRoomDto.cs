@@ -4,16 +4,13 @@ namespace LabCw5.DTOs;
 
 public class CreateRoomDto
 {
-    [MaxLength(10), Required]
+    [Required]
     public string Name { get; set; }
-    [MaxLength(1), Required]
+    [Required]
     public string BuildingCode { get; set; }
-    [Required]
     public int Floor { get; set; }
-    [Required]
+    [Range(1, int.MaxValue)]
     public int Capacity { get; set; }
-    [Required]
     public bool hasProjector { get; set; }
-    [Required]
     public bool IsActive { get; set; }
 }
