@@ -180,6 +180,11 @@ public class RoomsController : ControllerBase
         {
             return NotFound($"Room with id  {id} not found");
         }
+        var hasReservations = ReservationController.Reservations.Any(x => x.Id == id);
+        if (hasReservations)
+        {
+            return Conflict($"Nie można usunąć sali {id}, ponieważ posiada przypisane rezerwacje.");
+        }
         Rooms.Remove(updatedRoom);
         return NoContent();
     }
