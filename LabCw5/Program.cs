@@ -12,7 +12,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.UseSwaggerUI(opt=>opt.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"));
+    app.UseSwaggerUI(opt=>opt.SwaggerEndpoint("/openapi/v1.json", "My Api"));
 }
 
 app.UseHttpsRedirection();
